@@ -4,12 +4,13 @@ var BALL = 'BALL';
 var GAMER = 'GAMER';
 var Score ;
 var BallCaont ;
-
 var GAMER_IMG = '<img src="img/gamer.png" />';
 var BALL_IMG = '<img src="img/ball.png" />';
 var gBoard;
 var gGamerPos;
 var intervalId ;
+
+
 
 function initGame() {
 	Score =0;
@@ -57,7 +58,10 @@ function buildBoard() {
 			if (i === 0 || i === board.length - 1 || j === 0 || j === board[0].length - 1) {
 				cell.type = WALL;
 			}
-
+            if((i==0&&j==Math.floor(board[0].length/2)) || (i==board.length-1&&j==Math.floor(board[0].length/2)||(i==Math.floor(board.length/2)&&j==0) || (i==Math.floor(board.length/2)&&j==board[0].length-1)) )
+			{
+				cell.type=FLOOR;
+			}
 			// Add created cell to The game board
 			board[i][j] = cell;
 		}
@@ -93,7 +97,7 @@ function renderBoard(board) {
 
 			//TODO - Change To ES6 template string
 			// strHTML += '\t<td class="cell ' + cellClass + '"  onclick="moveTo(' + i + ',' + j + ')" >\n';
-			strHTML +=`\t<td class="cell ${cellClass}   onclick="moveTo(${i} ,  ${j} )" >\n`;
+			strHTML +=`\t<td class="cell ${cellClass}   onclick="moveTo(${i} ,  ${j} ,${false})" >\n`;
 
 			// TODO - change to switch case statement
 			// if (currCell.gameElement === GAMER) {
@@ -121,7 +125,7 @@ function renderBoard(board) {
 }
 
 // Move the player to a specific location
-function moveTo(i, j) {
+function moveTo(i, j,ensure) {
 
 	var targetCell = gBoard[i][j];
 	if (targetCell.type === WALL) return;
@@ -129,13 +133,11 @@ function moveTo(i, j) {
 	// Calculate distance to make sure we are moving to a neighbor cell
 	var iAbsDiff = Math.abs(i - gGamerPos.i);
 	var jAbsDiff = Math.abs(j - gGamerPos.j);
-    var winflag =false;
+    var flag =false;
 	// If the clicked Cell is one of the four allowed
-	if ((iAbsDiff === 1 && jAbsDiff === 0) || (jAbsDiff === 1 && iAbsDiff === 0)) {
+	if ((iAbsDiff === 1 && jAbsDiff === 0) || (jAbsDiff === 1 && iAbsDiff === 0)||ensure) {
 
-		if (targetCell.gameElement === BALL) {
-			console.log('Collecting!');
-			
+		if (targetCell.gameElement === BALL) {			
 			Score++;
 		    BallCaont--;
 			console.log(BallCaont);
@@ -191,16 +193,41 @@ function handleKey(event) {
 
 	switch (event.key) {
 		case 'ArrowLeft':
-			moveTo(i, j - 1);
+			if(i==Math.floor(gBoard.length/2) && j==0)
+			{   console.log("Please")
+				moveTo(Math.floor(gBoard.length/2), gBoard[0].length-1,true);
+			}
+			else{
+			moveTo(i, j - 1,false);
+			}
 			break;
 		case 'ArrowRight':
-			moveTo(i, j + 1);
+			if(i==Math.floor(gBoard.length/2) && j==gBoard[0].length-1)
+			{
+                moveTo(Math.floor(gBoard.length/2), 0,true);
+			}
+			else{
+				
+				moveTo(i, j + 1,false);
+			}
 			break;
 		case 'ArrowUp':
-			moveTo(i - 1, j);
+			if(i==0 && j==Math.floor(gBoard[0].length/2))
+			{
+                moveTo(gBoard.length-1, Math.floor(gBoard[0].length/2),true);
+			}
+			else{
+                moveTo(i - 1, j,false);
+            }
 			break;
 		case 'ArrowDown':
-			moveTo(i + 1, j);
+			if(i==gBoard.length-1 && j==Math.floor(gBoard[0].length/2))
+			{
+                moveTo(0, Math.floor(gBoard[0].length/2),true);
+			}
+			else{
+                moveTo(i + 1, j,false);
+            }
 			break;
 
 	}
