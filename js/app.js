@@ -2,17 +2,41 @@ var WALL = 'WALL';
 var FLOOR = 'FLOOR';
 var BALL = 'BALL';
 var GAMER = 'GAMER';
+var Score ;
+var BallCaont ;
 
 var GAMER_IMG = '<img src="img/gamer.png" />';
 var BALL_IMG = '<img src="img/ball.png" />';
-
 var gBoard;
 var gGamerPos;
+var intervalId ;
+
 function initGame() {
+	Score =0;
+	BallCaont=2;
 	gGamerPos = { i: 2, j: 9 };
 	gBoard = buildBoard();
 	renderBoard(gBoard);
+
 }
+
+randomBallPosition()
+function randomBallPosition() {
+
+	intervalId  = setInterval(function () {
+		let randomBallPositioni = Math.floor(Math.random() * 8)+1;
+		let randomBallPositionj = 	Math.floor(Math.random() * 10)+1;
+		while(gBoard[randomBallPositioni][randomBallPositionj].gameElement!== null){
+			randomBallPositioni =  Math.floor(Math.random() * 8)+1;
+		    randomBallPositionj =Math.floor(Math.random() * 10)+1;
+		}
+        gBoard[randomBallPositioni][randomBallPositionj].gameElement = BALL;
+		BallCaont++;
+		
+        renderCell({i:randomBallPositioni,j:randomBallPositionj}, BALL_IMG);
+	},3500);
+}
+
 
 
 function buildBoard() {
@@ -61,20 +85,30 @@ function renderBoard(board) {
 
 			var cellClass = getClassName({ i: i, j: j })
 
+
+			cellClass += currCell.type === FLOOR ? ' floor' : ' wall';			
 			// TODO - change to short if statement
-			if (currCell.type === FLOOR) cellClass += ' floor';
-			else if (currCell.type === WALL) cellClass += ' wall';
+			// if (currCell.type === FLOOR) cellClass += ' floor';
+			// else if (currCell.type === WALL) cellClass += ' wall';
 
 			//TODO - Change To ES6 template string
-			strHTML += '\t<td class="cell ' + cellClass + '"  onclick="moveTo(' + i + ',' + j + ')" >\n';
+			// strHTML += '\t<td class="cell ' + cellClass + '"  onclick="moveTo(' + i + ',' + j + ')" >\n';
+			strHTML +=`\t<td class="cell ${cellClass}   onclick="moveTo(${i} ,  ${j} )" >\n`;
 
 			// TODO - change to switch case statement
-			if (currCell.gameElement === GAMER) {
-				strHTML += GAMER_IMG;
-			} else if (currCell.gameElement === BALL) {
-				strHTML += BALL_IMG;
-			}
-
+			// if (currCell.gameElement === GAMER) {
+			// 	strHTML += GAMER_IMG;
+			// } else if (currCell.gameElement === BALL) {
+			// 	strHTML += BALL_IMG;
+			// }
+            switch (currCell.gameElement) {
+				case GAMER:
+				  strHTML += GAMER_IMG;
+				  break;
+				case BALL:
+				  strHTML += BALL_IMG;
+				  break;
+			  }
 			strHTML += '\t</td>\n';
 		}
 		strHTML += '</tr>\n';
@@ -95,12 +129,22 @@ function moveTo(i, j) {
 	// Calculate distance to make sure we are moving to a neighbor cell
 	var iAbsDiff = Math.abs(i - gGamerPos.i);
 	var jAbsDiff = Math.abs(j - gGamerPos.j);
-
+    var winflag =false;
 	// If the clicked Cell is one of the four allowed
 	if ((iAbsDiff === 1 && jAbsDiff === 0) || (jAbsDiff === 1 && iAbsDiff === 0)) {
 
 		if (targetCell.gameElement === BALL) {
 			console.log('Collecting!');
+			
+			Score++;
+		    BallCaont--;
+			console.log(BallCaont);
+			renderScore()
+			if(BallCaont==0)
+			{
+				flag=true;
+				
+			}
 		}
 
 		// MOVING from current position
@@ -116,9 +160,19 @@ function moveTo(i, j) {
 		gBoard[gGamerPos.i][gGamerPos.j].gameElement = GAMER;
 		// DOM:
 		renderCell(gGamerPos, GAMER_IMG);
+		if(flag){
+			clearInterval(intervalId);
+			alert('You Won!');
+		}
 
 	} // else console.log('TOO FAR', iAbsDiff, jAbsDiff);
 
+}
+
+
+function renderScore() {
+	var elScore = document.getElementById('score');
+    elScore.innerHTML= Score.toString() ;
 }
 
 // Convert a location object {i, j} to a selector and render a value in that element
@@ -156,7 +210,17 @@ function handleKey(event) {
 // Returns the class name for a specific cell
 function getClassName(location) {
 	var cellClass = 'cell-' + location.i + '-' + location.j;
-	console.log('cellClass:', cellClass);
 	return cellClass;
 }
 
+function onReset()
+{
+	var elBoard = document.querySelector('.board');
+	elBoard.innerHTML = '';
+	initGame();
+	randomBallPosition();
+	Score=0;
+	renderScore()
+
+	BallCaont=2;
+}
